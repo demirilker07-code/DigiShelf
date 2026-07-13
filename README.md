@@ -24,8 +24,8 @@ DigiShelf, kisisel kutuphane yonetimi icin gelistirilen bir kitap takip web uygu
 
 ```bash
 npm install
+npx prisma generate
 npm run db:push
-npm run db:seed
 npm run dev
 ```
 
