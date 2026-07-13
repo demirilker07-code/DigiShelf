@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum BookStatus {
+  UNREAD
+  READING
+  READ
+  PAUSED
+  ABANDONED
+  WISHLIST
+}
+
+model User {
+  id              String           @id @default(cuid())
+  email           String           @unique
+  displayName     String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  libraryBooks    LibraryBook[]
+  readingSessions ReadingSession[]
+  yearGoals       YearGoal[]
+}
+
+model Book {
+  id              String           @id @default(cuid())
+  title           String
+  author          String
+  description     String?
+  coverUrl        String?
+  isbn            String?          @unique
+  pageCount       Int?
+  publishedYear   Int?
+  categories      String
+  source          String           @default("manual")
+  sourceKey       String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  libraryEntries  LibraryBook[]
+}
+
+model LibraryBook {
+  id               String           @id @default(cuid())
+  userId           String
+  bookId           String
+  status           BookStatus       @default(UNREAD)
+  owned            Boolean          @default(true)
+  rating           Int?
+  notes            String?
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  addedAt          DateTime         @default(now())
+  currentPage      Int              @default(0)
+  recommendedScore Int              @default(0)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book             Book             @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  readingSessions  ReadingSession[]
+
+  @@unique([userId, bookId])
+}
+
+model ReadingSession {
+  id             String      @id @default(cuid())
+  userId         String
+  libraryBookId  String
+  pagesRead      Int
+  loggedAt       DateTime    @default(now())
+  note           String?
+  createdAt      DateTime    @default(now())
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  libraryBook    LibraryBook @relation(fields: [libraryBookId], references: [id], onDelete: Cascade)
+}
+
+model YearGoal {
+  id          String   @id @default(cuid())
+  userId      String
+  year        Int
+  targetBooks Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, year])
+}
